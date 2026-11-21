@@ -1,0 +1,5 @@
+#!/bin/bash
+echo "SUBSYSTEM=CU"
+echo "F1_INTERFACE=UP"
+echo "ACTIVE_UE_SESSIONS=12"
+echo "NGAP_AMF_STATE=CONNECTED"

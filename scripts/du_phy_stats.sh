@@ -1,0 +1,5 @@
+#!/bin/bash
+echo "SUBSYSTEM=DU"
+echo "PTP_SYNC_STATE=LOCKED"
+echo "SLOT_TIMING_US=500"
+echo "CELL_STATE=ACTIVE"

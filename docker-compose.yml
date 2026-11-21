@@ -1,0 +1,90 @@
+services:
+  jump-host:
+    image: lscr.io/linuxserver/openssh-server:latest
+    container_name: gnodeb-jump
+    volumes:
+      - ./enable_forwarding.sh:/custom-cont-init.d/enable_forwarding.sh:ro
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - USER_NAME=qa_runner
+      - USER_PASSWORD=jump_pass
+      - PASSWORD_ACCESS=true
+    ports:
+      - "2222:2222"
+    networks:
+      runner_net:
+        ipv4_address: 172.28.1.10
+      gnodeb_backplane:
+        ipv4_address: 172.28.2.2
+
+  cu-node:
+    image: lscr.io/linuxserver/openssh-server:latest
+    container_name: gnodeb-cu
+    hostname: gnodeb-cu
+    volumes:
+      - ./enable_forwarding.sh:/custom-cont-init.d/enable_forwarding.sh:ro
+      - ./scripts/cu_status.sh:/usr/local/bin/cu_status.sh:ro
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - USER_NAME=admin
+      - USER_PASSWORD=cu_pass
+      - PASSWORD_ACCESS=true
+    networks:
+      gnodeb_backplane:
+        ipv4_address: 172.28.2.10
+      cu_du_internal:
+        ipv4_address: 172.28.3.2
+
+  du-node:
+    image: lscr.io/linuxserver/openssh-server:latest
+    container_name: gnodeb-du
+    hostname: gnodeb-du
+    volumes:
+      - ./scripts/du_phy_stats.sh:/usr/local/bin/du_phy_stats.sh:ro
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - USER_NAME=admin
+      - USER_PASSWORD=du_pass
+      - PASSWORD_ACCESS=true
+    networks:
+      cu_du_internal:
+        ipv4_address: 172.28.3.10
+
+  rc-node:
+    image: lscr.io/linuxserver/openssh-server:latest
+    container_name: gnodeb-rc
+    hostname: gnodeb-rc
+    volumes:
+      - ./scripts/rc_radio_health.sh:/usr/local/bin/rc_radio_health.sh:ro
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - USER_NAME=admin
+      - USER_PASSWORD=rc_pass
+      - PASSWORD_ACCESS=true
+    networks:
+      gnodeb_backplane:
+        ipv4_address: 172.28.2.20
+
+networks:
+  runner_net:
+    ipam:
+      config:
+        - subnet: 172.28.1.0/24
+  gnodeb_backplane:
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.28.2.0/24
+  cu_du_internal:
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.28.3.0/24

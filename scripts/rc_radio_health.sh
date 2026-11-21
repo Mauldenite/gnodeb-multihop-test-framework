@@ -1,0 +1,5 @@
+#!/bin/bash
+echo "SUBSYSTEM=RC"
+echo "PA_TEMP_MC=54200"
+echo "RF_CARRIER_LOCK=LOCKED"
+echo "TX_POWER_DBM=24.5"
