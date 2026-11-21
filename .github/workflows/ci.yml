@@ -14,12 +14,20 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+
+      - name: Pre-pull OpenSSH container image once (avoids parallel registry burst limits)
+        run: |
+          for attempt in 1 2 3; do
+            docker pull lscr.io/linuxserver/openssh-server:latest && break
+            echo "Registry rate-limited, retrying in 5s..."
+            sleep 5
+          done
 
       - name: Ensure scripts are executable
         run: chmod +x run_lab.sh enable_forwarding.sh scripts/*.sh
