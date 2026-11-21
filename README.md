@@ -1,5 +1,7 @@
 # Multi-Hop SSH Test Automation Framework (5G gNodeB Topology)
 
+![Multi-Hop gNodeB Integration Tests](https://github.com)
+
 A lightweight, containerized Python + `pytest` test automation framework demonstrating **nested `direct-tcpip` SSH tunneling** via Paramiko across isolated embedded Linux subsystems.
 
 Modeled on real-world 5G mmWave Access Point (gNodeB) architectures where internal radio and baseband units sit behind non-routable backplane networks.

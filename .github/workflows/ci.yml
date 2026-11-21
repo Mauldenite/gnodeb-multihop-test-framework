@@ -1,0 +1,32 @@
+name: Multi-Hop gNodeB Integration Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  integration-tests:
+    name: Run 4-Node Isolated gNodeB Lab
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Ensure scripts are executable
+        run: chmod +x run_lab.sh enable_forwarding.sh scripts/*.sh
+
+      - name: Spin up Docker topology and run pytest suite
+        run: ./run_lab.sh --clean
+
+      - name: Dump container logs on failure
+        if: failure()
+        run: docker compose logs
