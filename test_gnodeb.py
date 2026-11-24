@@ -1,90 +1,75 @@
-from gnodeb_ssh import run_cmd
+from unittest.mock import MagicMock
+import pytest
+from ap import AccessPoint
 
 
-def test_all_subsystems_reachable(gnodeb_nodes):
-    """Verify Jump, CU, DU (nested), and RC (parallel) all respond cleanly."""
-    expected_hosts = {
-        "cu": "gnodeb-cu",
-        "du": "gnodeb-du",
-        "rc": "gnodeb-rc",
-    }
-
-    for role, expected_hostname in expected_hosts.items():
-        code, out, err = run_cmd(gnodeb_nodes[role], "hostname")
-        assert code == 0, f"{role.upper()} failed: {err}"
-        assert out == expected_hostname, f"Expected {expected_hostname}, got {out}"
+def test_all_subsystems_reachable(ap):
+    """Verify CU, DU (nested), and RC (parallel) all respond cleanly."""
+    assert ap.cu.hostname() == "gnodeb-cu"
+    assert ap.du.hostname() == "gnodeb-du"
+    assert ap.rc.hostname() == "gnodeb-rc"
 
 
-def test_network_isolation_enforced(gnodeb_nodes):
+def test_network_isolation_enforced(ap):
     """Prove Jump Host CANNOT ping DU directly—confirming the nested tunnel through CU works."""
-    code, out, _ = run_cmd(gnodeb_nodes["jump"], "ping -c 1 -W 1 172.28.3.10")
-    assert code != 0, "Jump host should not have direct L3 routing to DU!"
+    assert ap.jump.can_ping("172.28.3.10") is False
 
 
-def test_parallel_subsystem_telemetry(gnodeb_nodes):
-    """Execute commands across CU, DU, and RC in a single test flow."""
-    _, cu_ip, _ = run_cmd(gnodeb_nodes["cu"], "hostname -i")
-    _, du_ip, _ = run_cmd(gnodeb_nodes["du"], "hostname -i")
-    _, rc_ip, _ = run_cmd(gnodeb_nodes["rc"], "hostname -i")
-
-    assert "172.28.2.10" in cu_ip
-    assert "172.28.3.10" in du_ip
-    assert "172.28.2.20" in rc_ip
+def test_parallel_subsystem_telemetry(ap):
+    """Verify subsystem IP addresses across CU, DU, and RC."""
+    assert "172.28.2.10" in ap.cu.ip_addresses()
+    assert "172.28.3.10" in ap.du.ip_addresses()
+    assert "172.28.2.20" in ap.rc.ip_addresses()
 
 
-def parse_kv_output(raw: str) -> dict[str, str]:
-    """Parses KEY=VALUE lines returned by subsystem telemetry scripts."""
-    result = {}
-    for line in raw.splitlines():
-        if "=" in line:
-            k, v = line.split("=", 1)
-            result[k.strip()] = v.strip()
-    return result
-
-
-def test_cu_control_plane_status(gnodeb_nodes):
+def test_cu_control_plane_status(ap):
     """Verify CU F1 interface and AMF connection state."""
-    code, out, err = run_cmd(gnodeb_nodes["cu"], "/usr/local/bin/cu_status.sh")
-    assert code == 0, f"CU status script failed: {err}"
-
-    stats = parse_kv_output(out)
-    assert stats["F1_INTERFACE"] == "UP"
-    assert stats["NGAP_AMF_STATE"] == "CONNECTED"
-    assert int(stats["ACTIVE_UE_SESSIONS"]) > 0
+    status = ap.cu.get_status()
+    assert status.f1_interface == "UP"
+    assert status.ngap_amf_state == "CONNECTED"
+    assert status.active_ue_sessions > 0
 
 
-def test_du_ptp_sync_and_cell_state(gnodeb_nodes):
+def test_du_ptp_sync_and_cell_state(ap):
     """Verify DU (nested inside CU) maintains PTP clock lock and active cell state."""
-    code, out, err = run_cmd(gnodeb_nodes["du"], "/usr/local/bin/du_phy_stats.sh")
-    assert code == 0, f"DU PHY script failed: {err}"
-
-    stats = parse_kv_output(out)
-    assert stats["PTP_SYNC_STATE"] == "LOCKED"
-    assert stats["CELL_STATE"] == "ACTIVE"
+    stats = ap.du.get_phy_stats()
+    assert stats.ptp_sync_state == "LOCKED"
+    assert stats.cell_state == "ACTIVE"
 
 
-def test_rc_rf_health_and_thermals(gnodeb_nodes):
+def test_rc_rf_health_and_thermals(ap):
     """Verify RC (parallel hop) RF carrier lock and safe power amplifier temperature."""
-    code, out, err = run_cmd(gnodeb_nodes["rc"], "/usr/local/bin/rc_radio_health.sh")
-    assert code == 0, f"RC radio script failed: {err}"
-
-    stats = parse_kv_output(out)
-    assert stats["RF_CARRIER_LOCK"] == "LOCKED"
-    assert int(stats["PA_TEMP_MC"]) < 85000  # Below 85°C thermal threshold
+    health = ap.rc.get_radio_health()
+    assert health.rf_carrier_lock == "LOCKED"
+    assert health.pa_temp_mc < 85000  # Below 85°C thermal threshold
 
 
-def test_end_to_end_gnodeb_readiness(gnodeb_nodes):
+def test_end_to_end_gnodeb_readiness(ap):
     """Cross-subsystem check: Cell can only transmit if CU F1, DU PTP, and RC RF are all healthy."""
-    _, cu_out, _ = run_cmd(gnodeb_nodes["cu"], "/usr/local/bin/cu_status.sh")
-    _, du_out, _ = run_cmd(gnodeb_nodes["du"], "/usr/local/bin/du_phy_stats.sh")
-    _, rc_out, _ = run_cmd(gnodeb_nodes["rc"], "/usr/local/bin/rc_radio_health.sh")
-
-    cu = parse_kv_output(cu_out)
-    du = parse_kv_output(du_out)
-    rc = parse_kv_output(rc_out)
+    cu = ap.cu.get_status()
+    du = ap.du.get_phy_stats()
+    rc = ap.rc.get_radio_health()
 
     assert (
-        cu["F1_INTERFACE"] == "UP"
-        and du["PTP_SYNC_STATE"] == "LOCKED"
-        and rc["RF_CARRIER_LOCK"] == "LOCKED"
+        cu.f1_interface == "UP"
+        and du.ptp_sync_state == "LOCKED"
+        and rc.rf_carrier_lock == "LOCKED"
     ), "End-to-end 5G gNodeB readiness check failed!"
+
+
+def test_ap_parameter_guardrails_block_dodgy_inputs():
+    """Verify invalid parameters fail fast in Python without touching SSH."""
+    mock_nodes = {role: MagicMock() for role in ("jump", "cu", "du", "rc")}
+    mock_ap = AccessPoint(mock_nodes)
+
+    with pytest.raises(ValueError):
+        mock_ap.du.get_phy_stats(cell_id=99)
+
+    with pytest.raises(ValueError):
+        mock_ap.du.extract_signal_rate_from_logs("/etc/passwd")
+
+    with pytest.raises(ValueError):
+        mock_ap.jump.can_ping("172.28.3.10; rm -rf /")
+
+    for client in mock_nodes.values():
+        client.exec_command.assert_not_called()

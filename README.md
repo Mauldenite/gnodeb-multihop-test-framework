@@ -32,6 +32,7 @@ Modeled on real-world 5G mmWave Access Point (gNodeB) architectures where intern
 - **Enforced L3 Network Isolation:** Docker internal bridge networks (`internal: true`) ensure `gnodeb-du` is completely unreachable from the Jump Host except via a nested tunnel through `gnodeb-cu`.
 - **Session-Scoped Pytest Fixtures:** Establishes the multi-hop tunnel hierarchy once per test session and guarantees reverse-order socket teardown via context managers.
 - **Simulated 5G Telemetry Endpoints:** Container-mounted scripts (`cu_status.sh`, `du_phy_stats.sh`, `rc_radio_health.sh`) validate F1-C/NGAP control-plane state, PTP clock lock, and RF thermal thresholds.
+- **Validated AccessPoint (`ap.py`) Facade:** Exposes typed subsystem controllers (`ap.cu`, `ap.du`, `ap.rc`, `ap.jump`) over the multi-hop SSH clients, validating parameters before execution and parsing telemetry into immutable Python dataclasses.
 
 ## Quick Start
 
@@ -52,6 +53,7 @@ To run the suite and automatically tear down all containers afterwards:
 
 ```text
 ├── gnodeb_ssh.py          # MultiHopSSHManager & direct-tcpip tunnel context manager
+├── ap.py                  # Validated AccessPoint facade (ap.cu, ap.du, ap.rc, ap.jump)
 ├── conftest.py            # Session-scoped pytest fixture exposing CU, DU, and RC handles
 ├── test_gnodeb.py         # Isolation, subsystem health, and end-to-end 5G readiness tests
 ├── docker-compose.yml     # 4-node topology across 3 isolated Docker bridge networks
@@ -59,4 +61,21 @@ To run the suite and automatically tear down all containers afterwards:
 ├── run_lab.sh             # One-command environment bootstrap and test runner
 ├── requirements.txt       # paramiko & pytest dependencies
 └── scripts/               # Simulated gNodeB subsystem telemetry scripts (CU, DU, RC)
+```
+
+### Test Authoring with `AccessPoint`
+
+Tests consume the session-scoped `ap` fixture to interact with subsystems through validated, typed methods rather than raw shell commands:
+
+```python
+def test_end_to_end_gnodeb_readiness(ap):
+    cu = ap.cu.get_status()
+    du = ap.du.get_phy_stats()
+    rc = ap.rc.get_radio_health()
+
+    assert (
+        cu.f1_interface == "UP"
+        and du.ptp_sync_state == "LOCKED"
+        and rc.rf_carrier_lock == "LOCKED"
+    )
 ```

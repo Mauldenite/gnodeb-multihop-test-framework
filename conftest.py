@@ -1,5 +1,6 @@
 import pytest
 from gnodeb_ssh import NodeCredentials, connect_gnodeb
+from ap import AccessPoint
 
 
 @pytest.fixture(scope="session")
@@ -17,3 +18,9 @@ def gnodeb_nodes():
 
     with connect_gnodeb(jump, cu, du, rc) as nodes:
         yield nodes
+
+
+@pytest.fixture(scope="session")
+def ap(gnodeb_nodes) -> AccessPoint:
+    """Exposes the validated AccessPoint facade over the active multi-hop tunnels."""
+    return AccessPoint(gnodeb_nodes)
