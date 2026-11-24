@@ -73,3 +73,27 @@ def test_ap_parameter_guardrails_block_dodgy_inputs():
 
     for client in mock_nodes.values():
         client.exec_command.assert_not_called()
+
+    with pytest.raises(ValueError):
+        mock_ap.du.extract_signal_rate_from_logs(rt_id=999)
+
+    with pytest.raises(ValueError):
+        mock_ap.du.get_degraded_rts(min_cinr_db=99.0)
+
+    with pytest.raises(ValueError):
+        mock_ap.du.get_degraded_rts(max_harq_retx=-1)
+
+
+def test_du_extract_signal_rate_from_logs(ap):
+    """Verify DU log parser extracts latest overall and per-RT (>32 RTs) signal rates."""
+    assert ap.du.extract_signal_rate_from_logs() == 1068.2
+    assert ap.du.extract_signal_rate_from_logs(rt_id=1) == 1195.0
+    assert ap.du.extract_signal_rate_from_logs(rt_id=36) == 1068.2
+
+
+def test_du_rt_capacity_and_degraded_link_detection(ap):
+    """Verify DU tracks >32 active RTs and flags low-CINR / high-HARQ terminals."""
+    assert ap.du.get_active_rt_count() == 36
+
+    degraded = ap.du.get_degraded_rts(min_cinr_db=18.0, max_harq_retx=2)
+    assert [rt.rt_id for rt in degraded] == [8, 13, 16, 26, 34]

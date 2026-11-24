@@ -1,0 +1,41 @@
+2026-11-24T09:50:00Z [DU-SYNC] ptp_state=LOCKED grandmaster=172.28.2.10 offset_ns=9
+2026-11-24T09:50:01Z [DU-RF] sector=0 carrier_freq_ghz=28.00 tx_power_dbm=34.5 active_rts=36
+2026-11-24T09:50:02Z [DU-RT-STATS] rt_id=1 beam_id=3 mcs=27 cinr_db=28.4 rssi_dbm=-61.2 signal_rate=1180.5 harq_retx=0
+2026-11-24T09:50:02Z [DU-RT-STATS] rt_id=2 beam_id=5 mcs=25 cinr_db=25.1 rssi_dbm=-64.8 signal_rate=1045.0 harq_retx=1
+2026-11-24T09:50:02Z [DU-RT-STATS] rt_id=3 beam_id=1 mcs=22 cinr_db=21.7 rssi_dbm=-68.0 signal_rate=890.2 harq_retx=0
+2026-11-24T09:50:02Z [DU-RT-STATS] rt_id=4 beam_id=8 mcs=27 cinr_db=29.0 rssi_dbm=-60.5 signal_rate=1210.0 harq_retx=0
+2026-11-24T09:50:02Z [DU-RT-STATS] rt_id=5 beam_id=12 mcs=19 cinr_db=18.3 rssi_dbm=-71.4 signal_rate=740.8 harq_retx=2
+2026-11-24T09:50:02Z [DU-RT-STATS] rt_id=6 beam_id=4 mcs=24 cinr_db=24.0 rssi_dbm=-65.5 signal_rate=985.4 harq_retx=0
+2026-11-24T09:50:02Z [DU-RT-STATS] rt_id=7 beam_id=2 mcs=26 cinr_db=26.8 rssi_dbm=-62.9 signal_rate=1115.6 harq_retx=0
+2026-11-24T09:50:02Z [DU-RT-STATS] rt_id=8 beam_id=15 mcs=17 cinr_db=16.2 rssi_dbm=-73.8 signal_rate=650.0 harq_retx=3
+2026-11-24T09:50:03Z [DU-RT-STATS] rt_id=9 beam_id=6 mcs=25 cinr_db=25.5 rssi_dbm=-64.1 signal_rate=1060.2 harq_retx=0
+2026-11-24T09:50:03Z [DU-RT-STATS] rt_id=10 beam_id=9 mcs=23 cinr_db=22.9 rssi_dbm=-66.7 signal_rate=935.7 harq_retx=1
+2026-11-24T09:50:03Z [DU-RT-STATS] rt_id=11 beam_id=11 mcs=21 cinr_db=20.4 rssi_dbm=-69.1 signal_rate=845.3 harq_retx=0
+2026-11-24T09:50:03Z [DU-RT-STATS] rt_id=12 beam_id=7 mcs=27 cinr_db=28.9 rssi_dbm=-60.8 signal_rate=1198.4 harq_retx=0
+2026-11-24T09:50:03Z [DU-RT-STATS] rt_id=13 beam_id=14 mcs=18 cinr_db=17.5 rssi_dbm=-72.3 signal_rate=695.1 harq_retx=2
+2026-11-24T09:50:03Z [DU-RT-STATS] rt_id=14 beam_id=10 mcs=24 cinr_db=23.8 rssi_dbm=-65.9 signal_rate=972.0 harq_retx=0
+2026-11-24T09:50:03Z [DU-RT-STATS] rt_id=15 beam_id=3 mcs=26 cinr_db=27.1 rssi_dbm=-62.4 signal_rate=1130.8 harq_retx=0
+2026-11-24T09:50:03Z [DU-RT-STATS] rt_id=16 beam_id=16 mcs=15 cinr_db=14.6 rssi_dbm=-75.5 signal_rate=560.4 harq_retx=4
+2026-11-24T09:50:04Z [DU-RT-STATS] rt_id=17 beam_id=5 mcs=25 cinr_db=25.0 rssi_dbm=-64.6 signal_rate=1040.9 harq_retx=0
+2026-11-24T09:50:04Z [DU-RT-STATS] rt_id=18 beam_id=2 mcs=27 cinr_db=29.3 rssi_dbm=-60.1 signal_rate=1225.0 harq_retx=0
+2026-11-24T09:50:04Z [DU-RT-STATS] rt_id=19 beam_id=8 mcs=22 cinr_db=21.9 rssi_dbm=-67.8 signal_rate=902.6 harq_retx=1
+2026-11-24T09:50:04Z [DU-RT-STATS] rt_id=20 beam_id=13 mcs=20 cinr_db=19.1 rssi_dbm=-70.5 signal_rate=790.3 harq_retx=1
+2026-11-24T09:50:04Z [DU-RT-STATS] rt_id=21 beam_id=4 mcs=26 cinr_db=26.4 rssi_dbm=-63.2 signal_rate=1098.7 harq_retx=0
+2026-11-24T09:50:04Z [DU-RT-STATS] rt_id=22 beam_id=9 mcs=24 cinr_db=24.2 rssi_dbm=-65.1 signal_rate=992.1 harq_retx=0
+2026-11-24T09:50:04Z [DU-RT-STATS] rt_id=23 beam_id=1 mcs=27 cinr_db=28.1 rssi_dbm=-61.5 signal_rate=1174.2 harq_retx=0
+2026-11-24T09:50:04Z [DU-RT-STATS] rt_id=24 beam_id=12 mcs=19 cinr_db=18.0 rssi_dbm=-71.9 signal_rate=728.5 harq_retx=2
+2026-11-24T09:50:05Z [DU-RT-STATS] rt_id=25 beam_id=6 mcs=25 cinr_db=25.7 rssi_dbm=-63.9 signal_rate=1071.4 harq_retx=0
+2026-11-24T09:50:05Z [DU-RT-STATS] rt_id=26 beam_id=15 mcs=16 cinr_db=15.4 rssi_dbm=-74.6 signal_rate=608.9 harq_retx=3
+2026-11-24T09:50:05Z [DU-RT-STATS] rt_id=27 beam_id=7 mcs=26 cinr_db=27.3 rssi_dbm=-62.1 signal_rate=1140.0 harq_retx=0
+2026-11-24T09:50:05Z [DU-RT-STATS] rt_id=28 beam_id=11 mcs=22 cinr_db=21.2 rssi_dbm=-68.4 signal_rate=876.5 harq_retx=1
+2026-11-24T09:50:05Z [DU-RT-STATS] rt_id=29 beam_id=14 mcs=20 cinr_db=19.6 rssi_dbm=-70.0 signal_rate=812.4 harq_retx=1
+2026-11-24T09:50:05Z [DU-RT-STATS] rt_id=30 beam_id=3 mcs=27 cinr_db=28.7 rssi_dbm=-60.9 signal_rate=1192.8 harq_retx=0
+2026-11-24T09:50:05Z [DU-RT-STATS] rt_id=31 beam_id=10 mcs=23 cinr_db=22.5 rssi_dbm=-67.0 signal_rate=918.6 harq_retx=0
+2026-11-24T09:50:05Z [DU-RT-STATS] rt_id=32 beam_id=5 mcs=25 cinr_db=25.3 rssi_dbm=-64.3 signal_rate=1052.7 harq_retx=0
+2026-11-24T09:50:06Z [DU-RT-STATS] rt_id=33 beam_id=8 mcs=24 cinr_db=23.9 rssi_dbm=-65.7 signal_rate=978.3 harq_retx=0
+2026-11-24T09:50:06Z [DU-RT-STATS] rt_id=34 beam_id=13 mcs=18 cinr_db=17.1 rssi_dbm=-72.7 signal_rate=682.0 harq_retx=2
+2026-11-24T09:50:06Z [DU-RT-STATS] rt_id=35 beam_id=2 mcs=26 cinr_db=26.9 rssi_dbm=-62.7 signal_rate=1122.4 harq_retx=0
+2026-11-24T09:50:06Z [DU-RT-STATS] rt_id=36 beam_id=9 mcs=24 cinr_db=24.4 rssi_dbm=-65.0 signal_rate=1004.5 harq_retx=0
+2026-11-24T09:50:10Z [DU-RF] sector=0 beam_sweep_complete active_rts=36 aggregate_throughput_mbps=34812.6
+2026-11-24T09:50:12Z [DU-RT-STATS] rt_id=1 beam_id=3 mcs=27 cinr_db=28.6 rssi_dbm=-61.0 signal_rate=1195.0 harq_retx=0
+2026-11-24T09:50:12Z [DU-RT-STATS] rt_id=36 beam_id=9 mcs=25 cinr_db=25.1 rssi_dbm=-64.4 signal_rate=1068.2 harq_retx=0

@@ -45,6 +45,7 @@ services:
     hostname: gnodeb-du
     volumes:
       - ./scripts/du_phy_stats.sh:/usr/local/bin/du_phy_stats.sh:ro
+      - ./data/rf.log:/var/log/rf.log:ro
     environment:
       - PUID=1000
       - PGID=1000

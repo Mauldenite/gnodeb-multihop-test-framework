@@ -23,6 +23,17 @@ class DUPhyStats:
 
 
 @dataclass(frozen=True)
+class RTLinkStats:
+    rt_id: int
+    beam_id: int
+    mcs: int
+    cinr_db: float
+    rssi_dbm: float
+    signal_rate: float
+    harq_retx: int
+
+
+@dataclass(frozen=True)
 class RCRadioHealth:
     subsystem: str
     rf_carrier_lock: str
@@ -104,6 +115,72 @@ class CUNode(SubsystemNode):
 
 class DUNode(SubsystemNode):
     """Explicit, parameter-validated methods for the Distributed Unit."""
+    _RT_LINE_RE = re.compile(
+        r"rt_id=(?P<rt_id>\d+)\s+"
+        r"beam_id=(?P<beam_id>\d+)\s+"
+        r"mcs=(?P<mcs>\d+)\s+"
+        r"cinr_db=(?P<cinr_db>-?[0-9.]+)\s+"
+        r"rssi_dbm=(?P<rssi_dbm>-?[0-9.]+)\s+"
+        r"signal_rate=(?P<signal_rate>[0-9.]+)\s+"
+        r"harq_retx=(?P<harq_retx>\d+)"
+    )
+
+    @staticmethod
+    def _validate_log_path(log_path: str) -> None:
+        if not log_path.startswith("/var/log/") or ".." in log_path:
+            raise ValueError(f"Log path must reside inside /var/log/: {log_path!r}")
+
+    def _get_latest_rt_stats(self, log_path: str) -> dict[int, RTLinkStats]:
+        """Reads [DU-RT-STATS] lines and keeps the most recent entry per rt_id."""
+        self._validate_log_path(log_path)
+        _, out, _ = self._exec(
+            f"grep -F '[DU-RT-STATS]' {shlex.quote(log_path)}"
+        )
+
+        latest_by_rt: dict[int, RTLinkStats] = {}
+        for line in out.splitlines():
+            match = self._RT_LINE_RE.search(line)
+            if match:
+                rt = RTLinkStats(
+                    rt_id=int(match.group("rt_id")),
+                    beam_id=int(match.group("beam_id")),
+                    mcs=int(match.group("mcs")),
+                    cinr_db=float(match.group("cinr_db")),
+                    rssi_dbm=float(match.group("rssi_dbm")),
+                    signal_rate=float(match.group("signal_rate")),
+                    harq_retx=int(match.group("harq_retx")),
+                )
+                latest_by_rt[rt.rt_id] = rt
+        return latest_by_rt
+
+    def get_active_rt_count(self, log_path: str = "/var/log/rf.log") -> int:
+        """Returns the number of unique Remote Terminals reporting telemetry."""
+        return len(self._get_latest_rt_stats(log_path))
+
+    def get_degraded_rts(
+        self,
+        min_cinr_db: float = 18.0,
+        max_harq_retx: int = 2,
+        log_path: str = "/var/log/rf.log",
+    ) -> list[RTLinkStats]:
+        """
+        Returns RTs whose latest CINR falls below `min_cinr_db` OR whose
+        HARQ retransmissions exceed `max_harq_retx`, sorted by rt_id.
+        """
+        if isinstance(min_cinr_db, bool) or not isinstance(min_cinr_db, (int, float)) or not (-10.0 <= min_cinr_db <= 50.0):
+            raise ValueError(f"min_cinr_db must be between -10.0 and 50.0, got {min_cinr_db!r}")
+        if isinstance(max_harq_retx, bool) or not isinstance(max_harq_retx, int) or not (0 <= max_harq_retx <= 16):
+            raise ValueError(f"max_harq_retx must be an integer between 0 and 16, got {max_harq_retx!r}")
+
+        latest = self._get_latest_rt_stats(log_path)
+        return sorted(
+            [
+                rt
+                for rt in latest.values()
+                if rt.cinr_db < min_cinr_db or rt.harq_retx > max_harq_retx
+            ],
+            key=lambda rt: rt.rt_id,
+        )
 
     def get_phy_stats(self, cell_id: Optional[int] = None) -> DUPhyStats:
         cmd = f"{self._bin_dir}/du_phy_stats.sh"
@@ -124,16 +201,27 @@ class DUNode(SubsystemNode):
         except KeyError as exc:
             raise RuntimeError(f"Missing expected key {exc} in du_phy_stats.sh output: {out!r}") from exc
 
-    def extract_signal_rate_from_logs(self, log_path: str = "/var/log/rf.log") -> float:
+    def extract_signal_rate_from_logs(
+        self,
+        rt_id: Optional[int] = None,
+        log_path: str = "/var/log/rf.log",
+    ) -> float:
         if not log_path.startswith("/var/log/") or ".." in log_path:
             raise ValueError(f"Log path must reside inside /var/log/: {log_path!r}")
 
+        if rt_id is not None:
+            if isinstance(rt_id, bool) or not isinstance(rt_id, int) or not (1 <= rt_id <= 64):
+                raise ValueError(f"rt_id must be an integer between 1 and 64, got {rt_id!r}")
+            pattern = f"rt_id={rt_id} .*signal_rate="
+        else:
+            pattern = "signal_rate="
+
         _, out, _ = self._exec(
-            f"grep -E 'signal_rate=' {shlex.quote(log_path)} | tail -n 1"
+            f"grep -E {shlex.quote(pattern)} {shlex.quote(log_path)} | tail -n 1"
         )
         match = re.search(r"signal_rate=([0-9]+(?:\.[0-9]+)?)", out)
         if not match:
-            raise RuntimeError(f"Could not extract signal_rate from {log_path}: {out!r}")
+            raise RuntimeError(f"Could not extract signal_rate (rt_id={rt_id}) from {log_path}: {out!r}")
         return float(match.group(1))
 
 
